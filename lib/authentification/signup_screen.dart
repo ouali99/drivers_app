@@ -1,14 +1,20 @@
 import 'package:drivers_app/authentification/car_info_screen.dart';
 import 'package:drivers_app/authentification/login_screen.dart';
+import 'package:drivers_app/global/global.dart';
 import 'package:drivers_app/widgets/progress_dialog.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+
 
 class SignUpScreen extends StatefulWidget
 {
   @override
   _SignUpScreenState createState() => _SignUpScreenState();
 }
+
+
 
 class _SignUpScreenState extends State<SignUpScreen>
 {
@@ -18,40 +24,77 @@ class _SignUpScreenState extends State<SignUpScreen>
   TextEditingController passwordTextEditingController = TextEditingController();
 
 
-
   validateForm()
   {
-    if (nameTextEditingController.text.length < 3){
-      Fluttertoast.showToast(msg: "Remplissez le champ nom svp.");
+    if(nameTextEditingController.text.length < 3)
+    {
+      Fluttertoast.showToast(msg: "name must be atleast 3 Characters.");
     }
-
-    else if (!emailTextEditingController.text.contains("@")){
-      Fluttertoast.showToast(msg: "Ajoutez un courriel valide svp .");
+    else if(!emailTextEditingController.text.contains("@"))
+    {
+      Fluttertoast.showToast(msg: "Email address is not Valid.");
     }
-
-    else if (phoneTextEditingController.text.isEmpty){
-      Fluttertoast.showToast(msg: "Le numéro de téléphone est obligatoire .");
+    else if(phoneTextEditingController.text.isEmpty)
+    {
+      Fluttertoast.showToast(msg: "Phone Number is required.");
     }
-
-    else if (passwordTextEditingController.text.length < 6){
-      Fluttertoast.showToast(msg: "Le mot de passe doit contenir plus que 6 caracteres ");
+    else if(passwordTextEditingController.text.length < 6)
+    {
+      Fluttertoast.showToast(msg: "Password must be atleast 6 Characters.");
     }
-
-    else {
-      showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext c){
-            return progressDialog(message: "Processing, please wait ...",);
-          }
-      );
+    else
+    {
+      saveDriverInfoNow();
     }
   }
 
+  saveDriverInfoNow() async
+  {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext c)
+        {
+          return ProgressDialog(message: "Processing, Please wait...",);
+        }
+    );
+
+    final User? firebaseUser = (
+        await fAuth.createUserWithEmailAndPassword(
+          email: emailTextEditingController.text.trim(),
+          password: passwordTextEditingController.text.trim(),
+        ).catchError((msg){
+          Navigator.pop(context);
+          Fluttertoast.showToast(msg: "Error: " + msg.toString());
+        })
+    ).user;
+
+    if(firebaseUser != null)
+    {
+      Map driverMap =
+      {
+        "id": firebaseUser.uid,
+        "name": nameTextEditingController.text.trim(),
+        "email": emailTextEditingController.text.trim(),
+        "phone": phoneTextEditingController.text.trim(),
+      };
+
+      DatabaseReference driversRef = FirebaseDatabase.instance.ref().child("drivers");
+      driversRef.child(firebaseUser.uid).set(driverMap);
+
+      currentFirebaseUser = firebaseUser;
+      Fluttertoast.showToast(msg: "Account has been Created.");
+      Navigator.push(context, MaterialPageRoute(builder: (c)=> CarInfoScreen()));
+    }
+    else
+    {
+      Navigator.pop(context);
+      Fluttertoast.showToast(msg: "Account has not been Created.");
+    }
+  }
 
   @override
-  Widget build(BuildContext context)
-  {
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: SingleChildScrollView(
@@ -66,16 +109,18 @@ class _SignUpScreenState extends State<SignUpScreen>
                 padding: const EdgeInsets.all(20.0),
                 child: Image.asset("images/logo1.png"),
               ),
+
               const SizedBox(height: 10,),
 
               const Text(
-                  "Registrer as a Driver",
-                  style: TextStyle(
-                    fontSize: 26,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.bold,
-                  )
+                "Register as a Driver",
+                style: TextStyle(
+                  fontSize: 26,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+
               TextField(
                 controller: nameTextEditingController,
                 style: const TextStyle(
@@ -100,6 +145,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                   ),
                 ),
               ),
+
               TextField(
                 controller: emailTextEditingController,
                 keyboardType: TextInputType.emailAddress,
@@ -125,6 +171,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                   ),
                 ),
               ),
+
               TextField(
                 controller: phoneTextEditingController,
                 keyboardType: TextInputType.phone,
@@ -150,6 +197,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                   ),
                 ),
               ),
+
               TextField(
                 controller: passwordTextEditingController,
                 keyboardType: TextInputType.text,
@@ -183,20 +231,17 @@ class _SignUpScreenState extends State<SignUpScreen>
                 onPressed: ()
                 {
                   validateForm();
-
                 },
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.lightGreenAccent
+                  backgroundColor: Colors.lightGreenAccent,
                 ),
                 child: const Text(
                   "Create Account",
                   style: TextStyle(
                     color: Colors.black54,
-                    fontSize: 10,
-
+                    fontSize: 18,
                   ),
                 ),
-
               ),
 
               TextButton(
@@ -206,14 +251,14 @@ class _SignUpScreenState extends State<SignUpScreen>
                 ),
                 onPressed: ()
                 {
-                  Navigator.push(context, MaterialPageRoute(builder: (e)=> LoginScreen()));
+                  Navigator.push(context, MaterialPageRoute(builder: (c)=> LoginScreen()));
                 },
               ),
+
             ],
           ),
         ),
       ),
-
     );
   }
 }

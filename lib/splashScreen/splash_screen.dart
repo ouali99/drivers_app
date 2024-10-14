@@ -1,6 +1,11 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+
 import 'package:drivers_app/authentification/login_screen.dart';
+import 'package:drivers_app/authentification/signup_screen.dart';
+import 'package:drivers_app/global/global.dart';
+import 'package:drivers_app/mainScreens/main_screen.dart';
+import 'package:flutter/material.dart';
+
 
 class MySplashScreen extends StatefulWidget
 {
@@ -10,23 +15,33 @@ class MySplashScreen extends StatefulWidget
   _MySplashScreenState createState() => _MySplashScreenState();
 }
 
+
+
 class _MySplashScreenState extends State<MySplashScreen>
 {
-  starTimer()
+
+  startTimer()
   {
-    Timer(const Duration(seconds: 3), () async {
-      //send user to main screen
-      Navigator.push(context, MaterialPageRoute(builder: (e) => LoginScreen()));
+    Timer(const Duration(seconds: 3), () async
+    {
+      if(await fAuth.currentUser != null)
+      {
+        currentFirebaseUser = fAuth.currentUser;
+        Navigator.push(context, MaterialPageRoute(builder: (c)=> MainScreen()));
+      }
+      else
+      {
+        Navigator.push(context, MaterialPageRoute(builder: (c)=> LoginScreen()));
+      }
     });
   }
 
   @override
-  void initState()
-  {
+  void initState() {
     super.initState();
-    starTimer();
-  }
 
+    startTimer();
+  }
 
   @override
   Widget build(BuildContext context)
@@ -38,24 +53,24 @@ class _MySplashScreenState extends State<MySplashScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+
               Image.asset("images/logo1.png"),
 
               const SizedBox(height: 10,),
 
               const Text(
-                  "Uber Taxi App",
-                  style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold
-                  )
-              )
+                "Uber & inDriver Clone App",
+                style: TextStyle(
+                    fontSize: 24,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold
+                ),
+              ),
+
             ],
           ),
         ),
       ),
     );
   }
-
-
 }

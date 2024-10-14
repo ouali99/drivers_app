@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:drivers_app/tabPages/earning_tab.dart';
 import 'package:drivers_app/tabPages/home_tab.dart';
 import 'package:drivers_app/tabPages/profile_tab.dart';
 import 'package:drivers_app/tabPages/ratings_tab.dart';
+import 'package:flutter/material.dart';
 
 class MainScreen extends StatefulWidget
 {
@@ -10,10 +10,14 @@ class MainScreen extends StatefulWidget
   _MainScreenState createState() => _MainScreenState();
 }
 
+
+
+
 class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin
 {
   TabController? tabController;
   int selectedIndex = 0;
+
 
   onItemClicked(int index)
   {
@@ -21,18 +25,17 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
       selectedIndex = index;
       tabController!.index = selectedIndex;
     });
-
   }
+
   @override
   void initState() {
     super.initState();
 
     tabController = TabController(length: 4, vsync: this);
   }
-  @override
-  Widget build(BuildContext context)
-  {
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: TabBarView(
         physics: const NeverScrollableScrollPhysics(),
@@ -46,22 +49,27 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
+
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: "Home",
           ),
+
           BottomNavigationBarItem(
             icon: Icon(Icons.credit_card),
             label: "Earnings",
           ),
+
           BottomNavigationBarItem(
             icon: Icon(Icons.star),
             label: "Ratings",
           ),
+
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: "Account",
           ),
+
         ],
         unselectedItemColor: Colors.white54,
         selectedItemColor: Colors.white,
@@ -72,7 +80,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
         currentIndex: selectedIndex,
         onTap: onItemClicked,
       ),
+
     );
   }
 }
-

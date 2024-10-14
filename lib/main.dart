@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drivers_app/splashScreen/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -5,7 +7,24 @@ import 'package:flutter/material.dart';
 void main() async
 {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+
+  if(Platform.isAndroid){
+    await Firebase.initializeApp();
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyB08gztU8CUSFBvlf27UOGUrSvt6mMukfQ",
+        authDomain: "driversapp-860a0.firebaseapp.com",
+        projectId: "driversapp-860a0",
+        storageBucket: "driversapp-860a0.appspot.com",
+        messagingSenderId: "17472347586",
+        appId: "1:17472347586:web:1343f9ea37932254b64a5b",
+        measurementId: "G-LNKY09G06V"
+    );
+
+
+  }else{
+    await Firebase.initializeApp();
+
+  }
 
   runApp(
     MyApp(
