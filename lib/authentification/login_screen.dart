@@ -1,10 +1,11 @@
 import 'package:drivers_app/authentification/signup_screen.dart';
 import 'package:drivers_app/global/global.dart';
 import 'package:drivers_app/splashScreen/splash_screen.dart';
+import 'package:drivers_app/widgets/progress_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:drivers_app/widgets/progress_dialog.dart';
 
 
 class LoginScreen extends StatefulWidget
@@ -62,9 +63,23 @@ class _LoginScreenState extends State<LoginScreen>
 
     if(firebaseUser != null)
     {
-      currentFirebaseUser = firebaseUser;
-      Fluttertoast.showToast(msg: "Login Successful.");
-      Navigator.push(context, MaterialPageRoute(builder: (c)=> const MySplashScreen()));
+      DatabaseReference driversRef = FirebaseDatabase.instance.ref().child("drivers");
+      driversRef.child(firebaseUser.uid).once().then((driverKey)
+      {
+        final snap = driverKey.snapshot;
+        if(snap.value != null)
+        {
+          currentFirebaseUser = firebaseUser;
+          Fluttertoast.showToast(msg: "Login Successful.");
+          Navigator.push(context, MaterialPageRoute(builder: (c)=> const MySplashScreen()));
+        }
+        else
+        {
+          Fluttertoast.showToast(msg: "No record exist with this email.");
+          fAuth.signOut();
+          Navigator.push(context, MaterialPageRoute(builder: (c)=> const MySplashScreen()));
+        }
+      });
     }
     else
     {
