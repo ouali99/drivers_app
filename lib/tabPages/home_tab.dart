@@ -18,10 +18,11 @@ class _HomeTabPageState extends State<HomeTabPage>
   GoogleMapController? newGoogleMapController;
   final Completer<GoogleMapController> _controllerGoogleMap = Completer();
 
-  static const CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
+  static const CameraPosition _kMontreal = CameraPosition(
+    target: LatLng(45.5017, -73.5673),
     zoom: 14.4746,
   );
+
 
 
   blackThemeGoogleMap()
@@ -198,7 +199,7 @@ class _HomeTabPageState extends State<HomeTabPage>
         GoogleMap(
           mapType: MapType.normal,
           myLocationEnabled: true,
-          initialCameraPosition: _kGooglePlex,
+          initialCameraPosition: _kMontreal,
           onMapCreated: (GoogleMapController controller)
           {
             _controllerGoogleMap.complete(controller);
