@@ -30,6 +30,10 @@ class _HomeTabPageState extends State<HomeTabPage>
   var geoLocator = Geolocator();
   LocationPermission? _locationPermission;
 
+  String statusText = "Now Offline";
+  Color buttonColor = Colors.red;
+  bool isDriverActive = false;
+
 
   blackThemeGoogleMap()
   {
@@ -251,6 +255,56 @@ class _HomeTabPageState extends State<HomeTabPage>
             locateDriverPosition();
           },
         ),
+
+        statusText != "Now Online"
+            ? Container(
+          height: MediaQuery.of(context).size.height,
+          width: double.infinity,
+          color: Colors.black87,
+        )
+            : Container(),
+
+        //Button for online and offline driver
+        Positioned(
+          top: statusText != "Now Online"
+              ? MediaQuery.of(context).size.height *0.45
+              : 25,
+          left : 0,
+          right: 0,
+          child : Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: (){
+
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(26),
+                  )
+                ),
+                child: statusText != "Now Online"
+                    ? Text(
+                      statusText,
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    )
+                    : Icon(
+                    Icons.phonelink_ring,
+                    color: Colors.white,
+                    size: 26,
+
+                    ),
+              )
+            ],
+          )
+
+        )
       ],
     );
   }
