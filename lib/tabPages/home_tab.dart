@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:drivers_app/assistants/assistant_methods.dart';
 import 'package:drivers_app/global/global.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_geofire/flutter_geofire.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -275,8 +277,9 @@ class _HomeTabPageState extends State<HomeTabPage>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
-                onPressed: (){
-
+                onPressed: ()
+                {
+                  driverIsOnLineNow();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: buttonColor,
@@ -307,5 +310,29 @@ class _HomeTabPageState extends State<HomeTabPage>
         )
       ],
     );
+  }
+
+  driverIsOnLineNow() async{
+
+    Position pos = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+    driverCurrentPosition = pos;
+
+    Geofire.initialize("activeDrivers");
+    Geofire.setLocation(
+        currentFirebaseUser!.uid,
+        driverCurrentPosition!.latitude,
+        driverCurrentPosition!.longitude
+    );
+
+    DatabaseReference ref = FirebaseDatabase.instance.ref()
+        .child("drivers")
+        .child(currentFirebaseUser!.uid)
+        .child("newRideStatus");
+
+    ref.set("idle");
+    ref.onValue.listen((event) { });
+
   }
 }
