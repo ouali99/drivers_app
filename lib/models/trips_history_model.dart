@@ -7,16 +7,16 @@ class TripsHistoryModel
   String? destinationAddress;
   String? status;
   String? fareAmount;
-  String? car_details;
-  String? driverName;
+  String? userName;
+  String? userPhone;
 
   TripsHistoryModel({
     this.time,
     this.originAddress,
     this.destinationAddress,
     this.status,
-    this.car_details,
-    this.driverName,
+    this.userName,
+    this.userPhone,
   });
 
   TripsHistoryModel.fromSnapshot(DataSnapshot dataSnapshot)
@@ -26,7 +26,7 @@ class TripsHistoryModel
     destinationAddress = (dataSnapshot.value as Map)["destinationAddress"];
     status = (dataSnapshot.value as Map)["status"];
     fareAmount = (dataSnapshot.value as Map)["fareAmount"];
-    car_details = (dataSnapshot.value as Map)["car_details"];
-    driverName = (dataSnapshot.value as Map)["driverName"];
+    userName = (dataSnapshot.value as Map)["userName"];
+    userPhone = (dataSnapshot.value as Map)["userPhone"];
   }
 }

@@ -34,14 +34,9 @@ class _HomeTabPageState extends State<HomeTabPage>
     zoom: 14.4746,
   );
 
-  Position? driverCurrentPosition;
+
   var geoLocator = Geolocator();
   LocationPermission? _locationPermission;
-
-  String statusText = "Now Offline";
-  Color buttonColor = Colors.grey;
-  bool isDriverActive = false;
-
 
 
 
@@ -68,16 +63,44 @@ class _HomeTabPageState extends State<HomeTabPage>
 
     String humanReadableAddress = await AssistantMethods.searchAddressForGeographicCoOrdinates(driverCurrentPosition!, context);
     print("this is your address = " + humanReadableAddress);
+
+    AssistantMethods.readDriverRatings(context);
   }
 
   readCurrentDriverInformation() async
   {
     currentFirebaseUser = fAuth.currentUser;
+
+    await FirebaseDatabase.instance.ref()
+        .child("drivers")
+        .child(currentFirebaseUser!.uid)
+        .once()
+        .then((DatabaseEvent snap)
+    {
+      if(snap.snapshot.value != null)
+      {
+        onlineDriverData.id = (snap.snapshot.value as Map)["id"];
+        onlineDriverData.name = (snap.snapshot.value as Map)["name"];
+        onlineDriverData.phone = (snap.snapshot.value as Map)["phone"];
+        onlineDriverData.email = (snap.snapshot.value as Map)["email"];
+        onlineDriverData.car_color = (snap.snapshot.value as Map)["car_details"]["car_color"];
+        onlineDriverData.car_model = (snap.snapshot.value as Map)["car_details"]["car_model"];
+        onlineDriverData.car_number = (snap.snapshot.value as Map)["car_details"]["car_number"];
+
+        driverVehicleType = (snap.snapshot.value as Map)["car_details"]["type"];
+
+        print("Car Details :: ");
+        print(onlineDriverData.car_color);
+        print(onlineDriverData.car_model);
+        print(onlineDriverData.car_number);
+      }
+    });
+
     PushNotificationSystem pushNotificationSystem = PushNotificationSystem();
     pushNotificationSystem.initializeCloudMessaging(context);
     pushNotificationSystem.generateAndGetToken();
 
-
+    AssistantMethods.readDriverEarnings(context);
   }
 
   @override
@@ -252,8 +275,7 @@ class _HomeTabPageState extends State<HomeTabPage>
     Future.delayed(const Duration(milliseconds: 2000), ()
     {
       //SystemChannels.platform.invokeMethod("SystemNavigator.pop");
-      //SystemNavigator.pop();
-      MyApp.restartApp(context);
+      SystemNavigator.pop();
     });
   }
 }

@@ -1,11 +1,11 @@
+import 'package:drivers_app/assistants/assistant_methods.dart';
 import 'package:drivers_app/global/global.dart';
+import 'package:drivers_app/mainScreens/new_trip_screen.dart';
 import 'package:drivers_app/models/user_ride_request_information.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-
-import '../assistants/assistant_methods.dart';
-import '../mainScreens/new_trip_screen.dart';
 
 
 
@@ -145,7 +145,33 @@ class _NotificationDialogBoxState extends State<NotificationDialogBox>
                     onPressed: ()
                     {
                       //cancel the rideRequest
-                      Navigator.pop(context);
+                      FirebaseDatabase.instance.ref()
+                          .child("All Ride Requests")
+                          .child(widget.userRideRequestDetails!.rideRequestId!)
+                          .remove().then((value)
+                      {
+                        FirebaseDatabase.instance.ref()
+                            .child("drivers")
+                            .child(currentFirebaseUser!.uid)
+                            .child("newRideStatus")
+                            .set("idle");
+                      }).then((value)
+                      {
+                        FirebaseDatabase.instance.ref()
+                            .child("drivers")
+                            .child(currentFirebaseUser!.uid)
+                            .child("tripsHistory")
+                            .child(widget.userRideRequestDetails!.rideRequestId!)
+                            .remove();
+                      }).then((value)
+                      {
+                        Fluttertoast.showToast(msg: "Ride Request has been Cancelled, Successfully. Restart App Now.");
+                      });
+
+                      Future.delayed(const Duration(milliseconds: 3000), ()
+                      {
+                        SystemNavigator.pop();
+                      });
                     },
                     child: Text(
                       "Cancel".toUpperCase(),
@@ -165,7 +191,7 @@ class _NotificationDialogBoxState extends State<NotificationDialogBox>
                     {
                       //accept the rideRequest
                       acceptRideRequest(context);
-                      },
+                    },
                     child: Text(
                       "Accept".toUpperCase(),
                       style: const TextStyle(
@@ -196,16 +222,12 @@ class _NotificationDialogBoxState extends State<NotificationDialogBox>
       if(snap.snapshot.value != null)
       {
         getRideRequestId = snap.snapshot.value.toString();
-        print("this is getRideRequestId::");
-        print(getRideRequestId);
       }
       else
       {
         Fluttertoast.showToast(msg: "This ride request do not exists.");
       }
-      print("this is getRideRequestId::");
-      print(getRideRequestId);
-      Fluttertoast.showToast(msg: "getRideRequestId: " + getRideRequestId);
+
       if(getRideRequestId == widget.userRideRequestDetails!.rideRequestId)
       {
         FirebaseDatabase.instance.ref()
@@ -213,6 +235,8 @@ class _NotificationDialogBoxState extends State<NotificationDialogBox>
             .child(currentFirebaseUser!.uid)
             .child("newRideStatus")
             .set("accepted");
+
+        AssistantMethods.pauseLiveLocationUpdates();
 
         //trip started now - send driver to new tripScreen
         Navigator.push(context, MaterialPageRoute(builder: (c)=> NewTripScreen(
