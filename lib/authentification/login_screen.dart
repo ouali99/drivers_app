@@ -1,12 +1,12 @@
 import 'package:drivers_app/authentification/signup_screen.dart';
-import 'package:drivers_app/global/global.dart';
-import 'package:drivers_app/splashScreen/splash_screen.dart';
-import 'package:drivers_app/widgets/progress_dialog.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:drivers_app/global/global.dart';
+import 'package:drivers_app/splashScreen/splash_screen.dart';
+import 'package:drivers_app/widgets/progress_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -18,18 +18,53 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController passwordTextEditingController = TextEditingController();
   final LocalAuthentication auth = LocalAuthentication();
 
+  bool canUseBiometrics = false;
+  bool canUseFaceRecognition = false;
+
+  @override
+  void initState() {
+    super.initState();
+    checkBiometricAvailability();
+  }
+
+  // Vérifier la disponibilité de la biométrie
+  Future<void> checkBiometricAvailability() async {
+    bool canCheckBiometrics = (await auth.canCheckBiometrics) ?? false;
+    if (canCheckBiometrics) {
+      var availableBiometrics = await auth.getAvailableBiometrics();
+      setState(() {
+        canUseBiometrics = availableBiometrics.isNotEmpty;
+        canUseFaceRecognition =
+            availableBiometrics.contains(BiometricType.face);
+      });
+    }
+  }
+
+  // Authentification biométrique
   Future<void> authenticateBiometric() async {
     bool authenticated = false;
     try {
-      authenticated = await auth.authenticate(
-        localizedReason: 'Veuillez vous authentifier pour vous connecter',
-        options: const AuthenticationOptions(
-          useErrorDialogs: true,
-          stickyAuth: true,
-        ),
-      );
+      if (canUseFaceRecognition) {
+        // Si la reconnaissance faciale est disponible
+        authenticated = await auth.authenticate(
+          localizedReason: 'Veuillez utiliser la reconnaissance faciale pour vous connecter',
+          options: const AuthenticationOptions(
+            useErrorDialogs: true,
+            stickyAuth: true,
+          ),
+        );
+      } else if (canUseBiometrics) {
+        // Si la biométrie (empreinte digitale) est disponible
+        authenticated = await auth.authenticate(
+          localizedReason: 'Veuillez utiliser votre empreinte digitale pour vous connecter',
+          options: const AuthenticationOptions(
+            useErrorDialogs: true,
+            stickyAuth: true,
+          ),
+        );
+      }
+
       if (authenticated) {
-        // Si authentification réussie, valider le formulaire et procéder à la connexion
         validateForm();
       } else {
         Fluttertoast.showToast(msg: "Authentification biométrique échouée.");
